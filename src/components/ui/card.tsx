@@ -36,6 +36,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     />
   )
+  
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
