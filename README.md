@@ -1,274 +1,58 @@
-# AlgoViz - Algorithm Visualization Platform
+# 🌌 AlgoViz
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev)
-
-An interactive, visually stunning platform for learning and teaching algorithms through real-time visualizations. AlgoViz transforms complex algorithmic concepts into beautiful, animated demonstrations.
-
-## 🌟 Features
-
-### 📊 Tree Traversal Visualizer
-- **Interactive BST Creation**: Build binary search trees from custom input values
-- **Multiple Traversal Methods**:
-  - In-order (LNR) - Visit nodes in ascending order
-  - Pre-order (NLR) - Perfect for tree copying
-  - Post-order (LRN) - Ideal for tree deletion
-- **Smooth Animations**: Watch algorithms execute with fluid transitions
-- **Playback Controls**: Play, pause, step through, and reset animations
-- **Speed Control**: Adjust animation speed from 100ms to 3000ms
-- **Live Visualization**: Beautiful canvas-based tree rendering with node highlighting
-
-### 🔢 Truth Table Generator
-- **Flexible Expression Input**: 
-  - Symbol Notation: `p ∧ (q ∨ ¬r)`
-  - Text Notation: `p AND (q OR NOT r)`
-- **Supported Operators**:
-  - ¬ (NOT) - Negation
-  - ∧ (AND) - Conjunction
-  - ∨ (OR) - Disjunction
-  - → (IMPLIES) - Material implication
-  - ↔ (IFF) - Biconditional
-- **Automatic Variable Extraction**: Instantly identifies all variables in expressions
-- **Complete Truth Tables**: Generates all 2^n rows for n variables
-- **Export Options**:
-  - Copy to clipboard (tab-separated format)
-  - Download as CSV
-- **Operator Precedence Info**: Built-in reference guide
-
-### 🎨 User Experience
-- **Modern Dark Theme**: Eye-friendly interface with cyan and violet accents
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Smooth Animations**: Engaging fade-in and slide-in effects throughout
-- **Real-time Feedback**: Instant validation and error handling
-- **Glowing Effects**: Subtle animations that enhance visual appeal
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/algoviz.git
-   cd algoviz
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:3000` to see the application.
-
-## 📖 How to Use
-
-### Tree Traversal Visualizer
-
-1. **Create a Tree**
-   - Enter comma-separated values in the input field (e.g., `50,30,70,20,40,60,80`)
-   - Click "Create" to build the binary search tree
-   - The tree will be automatically positioned and displayed
-
-2. **Choose a Traversal Type**
-   - Select from In-order, Pre-order, or Post-order
-   - The traversal sequence updates instantly
-
-3. **Control the Animation**
-   - **Play**: Start the automatic animation
-   - **Pause**: Pause the current animation
-   - **Step**: Move to the next node manually
-   - **Reset**: Return to the starting position
-   - Adjust animation speed as needed
-
-4. **Read Explanations**
-   - Each traversal type has a detailed explanation
-   - Understand why each order is useful
-
-### Truth Table Generator
-
-1. **Enter an Expression**
-   - Use the Symbol Notation tab for mathematical operators: `p ∧ (q ∨ ¬r)`
-   - Or use the Text Notation tab for English operators: `p AND (q OR NOT r)`
-   - Use the quick-insert buttons to avoid typing errors
-
-2. **Review Variables and Precedence**
-   - Extracted variables are displayed automatically
-   - Check the operator precedence guide if unsure
-
-3. **Generate the Table**
-   - Click "Generate" to create the truth table
-   - The table shows all variable combinations and results
-
-4. **Export Results**
-   - **Copy**: Copy the table in tab-separated format (perfect for spreadsheets)
-   - **Download CSV**: Save as a `.csv` file for external analysis
-
-## 🛠️ Tech Stack
-
-- **Frontend Framework**: Next.js 16 (App Router)
-- **UI Library**: React 19 with shadcn/ui components
-- **Styling**: Tailwind CSS v4 with custom animations
-- **Canvas**: HTML5 Canvas for tree visualization
-- **Icons**: Lucide React
-- **Language**: TypeScript
-
-## 📁 Project Structure
-
-```
-algoviz/
-├── app/
-│   ├── layout.tsx           # Root layout with metadata
-│   ├── page.tsx             # Landing page with features
-│   ├── globals.css          # Global styles and theme
-│   ├── tree-traversal/      # Tree traversal page
-│   └── truth-table/         # Truth table generator page
-├── components/
-│   ├── ui/                  # shadcn/ui components
-│   ├── navbar.tsx           # Navigation header
-│   └── hero.tsx             # Landing page hero section
-├── lib/
-│   └── utils.ts             # Utility functions
-├── public/                  # Static assets
-├── next.config.mjs          # Next.js configuration
-├── tailwind.config.js       # Tailwind CSS configuration
-└── tsconfig.json            # TypeScript configuration
-```
-
-## 🎨 Design System
-
-### Color Palette
-- **Primary**: Cyan (`oklch(0.56 0.16 200)`) - Main action color
-- **Secondary**: Violet (`oklch(0.58 0.12 280)`) - Accent color
-- **Background**: Deep gray (`oklch(0.08 0 0)`) - Main background
-- **Surface**: Slightly lighter gray (`oklch(0.12 0 0)`) - Cards and surfaces
-
-### Typography
-- **Sans-serif**: Geist (headings and body)
-- **Monospace**: Geist Mono (code and technical content)
-
-### Animations
-- **Fade In Up**: 0.6s ease-out for entrance animations
-- **Slide In Right**: 0.6s ease-out for side transitions
-- **Glow**: 2s ease-in-out infinite for highlights
-- **Pulse Glow**: 3s ease-in-out infinite for subtle pulsing
-
-## 🔄 Algorithm Implementation Details
-
-### Tree Traversal Algorithms
-
-**In-order Traversal (Left → Node → Right)**
-```
-Best for: Visiting BST nodes in ascending order
-Use case: Sorted data extraction
-```
-
-**Pre-order Traversal (Node → Left → Right)**
-```
-Best for: Creating a copy of the tree
-Use case: Tree cloning and prefix expression generation
-```
-
-**Post-order Traversal (Left → Right → Node)**
-```
-Best for: Deleting the tree
-Use case: Memory deallocation and postfix expression evaluation
-```
-
-### Truth Table Generation
-
-- **Shunting Yard Algorithm**: Converts infix to postfix notation
-- **Stack-based Evaluation**: Efficiently evaluates boolean expressions
-- **Operator Precedence**:
-  1. ¬ (NOT) - Highest
-  2. ∧ (AND)
-  3. ∨ (OR)
-  4. → (IMPLIES)
-  5. ↔ (IFF) - Lowest
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git push origin main
-   ```
-
-2. **Connect to Vercel**
-   - Visit [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-   - Click "Deploy"
-
-The application will be live at `your-project.vercel.app`
-
-### Deploy to Other Platforms
-
-```bash
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-## 📊 Performance
-
-- **Optimized Canvas Rendering**: Efficient tree drawing with minimal redraws
-- **Lazy Component Loading**: Next.js automatic code splitting
-- **Smooth 60 FPS Animations**: Hardware-accelerated CSS transitions
-- **Responsive Design**: Mobile-first approach
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙋 Support
-
-Have questions or found a bug? 
-- **Issues**: Open an issue on GitHub
-- **Discussions**: Start a discussion for feature requests
-- **Email**: contact@algoviz.dev
-
-## 🎓 Educational Use
-
-AlgoViz is designed for:
-- **Computer Science Students**: Learn algorithms interactively
-- **Educators**: Teach algorithms with visual demonstrations
-- **Developers**: Quick algorithm reference and visualization
-- **Interviews**: Prepare for technical interviews
-
-
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org)
-- UI Components from [shadcn/ui](https://ui.shadcn.com)
-- Icons by [Lucide React](https://lucide.dev)
-- Inspired by algorithm visualization best practices
+**AlgoViz** is a modern algorithm visualization platform designed to make complex concepts intuitive through interactive, beautiful, and animated demonstrations. Built with **Next.js 16**, **React 19**, and **Framer Motion**.
 
 ---
 
-**Made with ❤️ by the AlgoViz team**
+## ✨ Key Features
+
+### 🌳 Tree Traversal Visualizer
+
+- **Interactive BST**: Build binary search trees from custom input.
+- **DFS Methods**: Support for In-order, Pre-order, and Post-order.
+- **Fluid Animations**: Canvas-based real-time traversal highlighting.
+- **Playback Controls**: Adjust speed, step forward, pause, and reset.
+
+### � Truth Table Generator
+
+- **Multi-Notation Support**: Use standard symbols (`∧`, `∨`, `¬`) or text (`AND`, `OR`, `NOT`).
+- **Logic Engine**: Shunting Yard algorithm with full operator precedence support.
+- **Export Ready**: Copy results to clipboard or download as CSV.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Library**: [React 19](https://react.dev/)
+- **Animation**: [Framer Motion](https://www.framer.com/motion/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **State/UI**: [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+---
+
+## � Getting Started
+
+1. **Clone & Enter**
+
+   ```bash
+   git clone https://github.com/yourusername/algoviz.git && cd algoviz
+   ```
+
+2. **Install & Run**
+
+   ```bash
+   npm install && npm run dev
+   ```
+
+3. **Explore**
+   Open `http://localhost:3000`
+
+---
+
+## 🎨 Design Principles
+
+- **Contemporary Light Theme**: A radiant, high-contrast interface.
+- **Motion-First UI**: Staggered entrance animations and smooth page transitions.
+- **Responsive & Accessible**: Optimized for all devices with semantic HTML.
