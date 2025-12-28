@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-// import { toast } from "@/components/ui/use-toast"
+import { motion, AnimatePresence } from "framer-motion"
 
 // Define operator precedence
 const precedence: Record<string, number> = {
@@ -33,11 +33,11 @@ export default function TruthTablePage() {
   // Helper function to convert text operators to symbols
   const convertToSymbols = (expr: string): string => {
     return expr
-      .replace(/NOT|not|!/g, "¬")
-      .replace(/AND|and|&&/g, "∧")
-      .replace(/OR|or|\|\|/g, "∨")
-      .replace(/IMPLIES|implies|=>/g, "→")
-      .replace(/IFF|iff|<=>/g, "↔")
+      .replace(/\bNOT\b|!/gi, "¬")
+      .replace(/\bAND\b|&&/gi, "∧")
+      .replace(/\bOR\b|\|\|/gi, "∨")
+      .replace(/\bIMPLIES\b|=>/gi, "→")
+      .replace(/\bIFF\b|<=>/gi, "↔")
       .replace(/\s+/g, " ")
       .trim()
   }
@@ -243,10 +243,6 @@ export default function TruthTablePage() {
     }
 
     navigator.clipboard.writeText(tableText)
-    // toast({
-    //   title: "Copied to clipboard",
-    //   description: "Truth table has been copied to clipboard",
-    // })
   }
 
   // Download truth table as CSV
@@ -279,10 +275,10 @@ export default function TruthTablePage() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link href="/" className="flex items-center justify-center">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-border bg-card">
+        <Link href="/" className="flex items-center justify-center group transition-colors hover:text-primary">
+          <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
           <span className="font-bold text-xl">AlgoViz</span>
         </Link>
         <div className="ml-auto"></div>
@@ -290,257 +286,217 @@ export default function TruthTablePage() {
 
       <main className="flex-1 p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          >
             <div>
-              <h1 className="text-3xl font-bold">Truth Table Generator</h1>
-              <p className="text-gray-500">
+              <h1 className="text-3xl font-bold tracking-tight">Truth Table Generator</h1>
+              <p className="text-muted-foreground">
                 Generate truth tables for logical expressions and boolean algebra formulas.
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <Separator />
+          <Separator className="bg-border" />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Input Expression</CardTitle>
-                <CardDescription>Enter a logical expression using the operators below</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Tabs value={activeTab} onValueChange={handleTabChange}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="standard">Symbol Notation</TabsTrigger>
-                    <TabsTrigger value="text">Text Notation</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="standard" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expression">Expression</Label>
-                      <Textarea
-                        id="expression"
-                        value={expression}
-                        onChange={(e) => handleExpressionChange(e.target.value)}
-                        placeholder="e.g., p ∧ (q ∨ ¬r)"
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " ¬")}
-                        className="font-mono"
-                      >
-                        ¬ (NOT)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " ∧")}
-                        className="font-mono"
-                      >
-                        ∧ (AND)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " ∨")}
-                        className="font-mono"
-                      >
-                        ∨ (OR)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " →")}
-                        className="font-mono"
-                      >
-                        → (IMPLIES)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " ↔")}
-                        className="font-mono"
-                      >
-                        ↔ (IFF)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " (")}
-                        className="font-mono"
-                      >
-                        (
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + ")")}
-                        className="font-mono"
-                      >
-                        )
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="text" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="text-expression">Expression</Label>
-                      <Textarea
-                        id="text-expression"
-                        value={expression}
-                        onChange={(e) => handleExpressionChange(e.target.value)}
-                        placeholder="e.g., p AND (q OR NOT r)"
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " NOT ")}
-                        className="font-mono"
-                      >
-                        NOT
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " AND ")}
-                        className="font-mono"
-                      >
-                        AND
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " OR ")}
-                        className="font-mono"
-                      >
-                        OR
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " IMPLIES ")}
-                        className="font-mono"
-                      >
-                        IMPLIES
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " IFF ")}
-                        className="font-mono"
-                      >
-                        IFF
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + " (")}
-                        className="font-mono"
-                      >
-                        (
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExpressionChange(expression + ")")}
-                        className="font-mono"
-                      >
-                        )
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <div className="space-y-2">
-                  <Label>Variables</Label>
-                  <div className="p-3 bg-muted rounded-md">
-                    <p className="font-mono">{variables.length > 0 ? variables.join(", ") : "No variables detected"}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={generateTruthTable} className="flex-1">
-                    <RefreshCw className="h-4 w-4 mr-2" /> Generate
-                  </Button>
-                </div>
-
-                {error && (
-                  <div className="p-3 bg-destructive/10 text-destructive rounded-md">
-                    <p>{error}</p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Operator Precedence</Label>
-                  <div className="p-3 bg-muted rounded-md text-sm">
-                    <p>1. ¬ (NOT) - highest</p>
-                    <p>2. ∧ (AND)</p>
-                    <p>3. ∨ (OR)</p>
-                    <p>4. → (IMPLIES)</p>
-                    <p>5. ↔ (IFF) - lowest</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Truth Table</CardTitle>
-                <CardDescription>
-                  {variables.length > 0
-                    ? `Truth table for ${expression} with ${variables.length} variables (${truthTable.length} rows)`
-                    : "Enter an expression to generate a truth table"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {variables.length > 0 && truthTable.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          {variables.map((variable, index) => (
-                            <TableHead key={index} className="font-mono">
-                              {variable}
-                            </TableHead>
-                          ))}
-                          <TableHead className="font-mono">{expression}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {truthTable.map((row, rowIndex) => (
-                          <TableRow key={rowIndex}>
-                            {row.map((value, colIndex) => (
-                              <TableCell key={colIndex} className="font-mono">
-                                {value ? "T" : "F"}
-                              </TableCell>
-                            ))}
-                            <TableCell className={`font-mono font-bold ${results[rowIndex] ? "text-primary" : ""}`}>
-                              {results[rowIndex] ? "T" : "F"}
-                            </TableCell>
-                          </TableRow>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="lg:col-span-1 border-2">
+                <CardHeader>
+                  <CardTitle>Input Expression</CardTitle>
+                  <CardDescription>Enter a logical expression using the operators below</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="standard">Symbol Notation</TabsTrigger>
+                      <TabsTrigger value="text">Text Notation</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="standard" className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="expression">Expression</Label>
+                        <Textarea
+                          id="expression"
+                          value={expression}
+                          onChange={(e) => handleExpressionChange(e.target.value)}
+                          placeholder="e.g., p ∧ (q ∨ ¬r)"
+                          className="font-mono border-2 focus-visible:ring-primary min-h-[100px]"
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {["¬", "∧", "∨", "→", "↔", "(", ")"].map((op) => (
+                          <Button
+                            key={op}
+                            variant="outline"
+                            onClick={() => handleExpressionChange(expression + " " + op)}
+                            className="font-mono border-2 hover:bg-primary/5 hover:text-primary transition-all"
+                          >
+                            {op}
+                          </Button>
                         ))}
-                      </TableBody>
-                    </Table>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="text" className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="text-expression">Expression</Label>
+                        <Textarea
+                          id="text-expression"
+                          value={expression}
+                          onChange={(e) => handleExpressionChange(e.target.value)}
+                          placeholder="e.g., p AND (q OR NOT r)"
+                          className="font-mono border-2 focus-visible:ring-primary min-h-[100px]"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {["NOT", "AND", "OR", "IMPLIES", "IFF", "(", ")"].map((op) => (
+                          <Button
+                            key={op}
+                            variant="outline"
+                            onClick={() => handleExpressionChange(expression + " " + op + " ")}
+                            className="font-mono border-2 hover:bg-primary/5 hover:text-primary transition-all"
+                          >
+                            {op}
+                          </Button>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-primary">Variables</Label>
+                    <div className="p-3 bg-accent/50 border-2 border-accent rounded-md">
+                      <p className="font-mono">{variables.length > 0 ? variables.join(", ") : "No variables detected"}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center h-40 border rounded-md bg-muted/30">
-                    <p className="text-muted-foreground">No truth table to display</p>
+
+                  <div className="flex gap-2">
+                    <Button onClick={generateTruthTable} className="flex-1 shadow-md">
+                      <RefreshCw className="h-4 w-4 mr-2" /> Generate
+                    </Button>
                   </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={copyToClipboard}
-                  disabled={variables.length === 0 || truthTable.length === 0}
-                >
-                  <Copy className="h-4 w-4 mr-2" /> Copy
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={downloadCSV}
-                  disabled={variables.length === 0 || truthTable.length === 0}
-                >
-                  <Download className="h-4 w-4 mr-2" /> Download CSV
-                </Button>
-              </CardFooter>
-            </Card>
+
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="p-3 bg-destructive/10 text-destructive rounded-md border border-destructive/20"
+                      >
+                        <p className="text-sm font-medium">{error}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-primary">Operator Precedence</Label>
+                    <div className="p-3 bg-muted/50 border-2 border-muted rounded-md text-sm space-y-1">
+                      <p className="flex justify-between"><span>1. ¬ (NOT)</span> <span className="text-muted-foreground italic">highest</span></p>
+                      <p>2. ∧ (AND)</p>
+                      <p>3. ∨ (OR)</p>
+                      <p>4. → (IMPLIES)</p>
+                      <p className="flex justify-between"><span>5. ↔ (IFF)</span> <span className="text-muted-foreground italic">lowest</span></p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-2"
+            >
+              <Card className="border-2 h-full">
+                <CardHeader className="border-b">
+                  <CardTitle>Truth Table</CardTitle>
+                  <CardDescription>
+                    {variables.length > 0
+                      ? `Truth table for ${expression} with ${variables.length} variables (${truthTable.length} rows)`
+                      : "Enter an expression to generate a truth table"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {variables.length > 0 && truthTable.length > 0 ? (
+                    <div className="overflow-hidden border-2 rounded-xl shadow-sm">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader className="bg-muted/50">
+                            <TableRow>
+                              {variables.map((variable, index) => (
+                                <TableHead key={index} className="font-mono font-bold text-foreground">
+                                  {variable}
+                                </TableHead>
+                              ))}
+                              <TableHead className="font-mono font-bold text-primary bg-primary/5">
+                                {expression}
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {truthTable.map((row, rowIndex) => (
+                              <TableRow key={rowIndex} className="hover:bg-accent/30 transition-colors">
+                                {row.map((value, colIndex) => (
+                                  <TableCell key={colIndex} className="font-mono">
+                                    <span className={value ? "text-emerald-600 font-bold" : "text-amber-600 font-medium"}>
+                                      {value ? "T" : "F"}
+                                    </span>
+                                  </TableCell>
+                                ))}
+                                <TableCell className={`font-mono font-bold bg-primary/5 ${results[rowIndex] ? "text-primary" : "text-amber-700"}`}>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${results[rowIndex] ? "bg-primary" : "bg-amber-500"}`}></span>
+                                    {results[rowIndex] ? "T" : "F"}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-60 border-2 border-dashed rounded-xl bg-slate-50 text-muted-foreground italic">
+                      <p>No truth table to display.</p>
+                      <p className="text-xs mt-2">Enter an expression and click Generate.</p>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 border-t bg-slate-50/50">
+                  <Button
+                    variant="outline"
+                    onClick={copyToClipboard}
+                    disabled={variables.length === 0 || truthTable.length === 0}
+                    className="border-2"
+                  >
+                    <Copy className="h-4 w-4 mr-2" /> Copy
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={downloadCSV}
+                    disabled={variables.length === 0 || truthTable.length === 0}
+                    className="border-2"
+                  >
+                    <Download className="h-4 w-4 mr-2" /> CSV
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </main>
 
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full border-t items-center px-4 md:px-6">
-        <p className="text-xs text-gray-500">© 2025 AlgoViz. All rights reserved.</p>
+      <footer className="py-6 border-t border-border bg-card">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-xs text-muted-foreground">© 2025 AlgoViz. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   )

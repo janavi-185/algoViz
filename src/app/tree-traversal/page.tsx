@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
+import { motion } from "framer-motion"
 
 // Define the TreeNode type
 interface TreeNode {
@@ -127,7 +128,7 @@ export default function TreeTraversalPage() {
         ctx.beginPath()
         ctx.moveTo(node.x, node.y)
         ctx.lineTo(node.left.x, node.left.y)
-        ctx.strokeStyle = "#888"
+        ctx.strokeStyle = "#cbd5e1" // Slate 200
         ctx.lineWidth = 2
         ctx.stroke()
         drawEdges(node.left)
@@ -137,7 +138,7 @@ export default function TreeTraversalPage() {
         ctx.beginPath()
         ctx.moveTo(node.x, node.y)
         ctx.lineTo(node.right.x, node.right.y)
-        ctx.strokeStyle = "#888"
+        ctx.strokeStyle = "#cbd5e1" // Slate 200
         ctx.lineWidth = 2
         ctx.stroke()
         drawEdges(node.right)
@@ -150,18 +151,24 @@ export default function TreeTraversalPage() {
     const drawNodes = (node: TreeNode | null) => {
       if (!node) return
 
+      // Draw shadow
+      ctx.beginPath()
+      ctx.arc(node.x, node.y + 2, 25, 0, Math.PI * 2)
+      ctx.fillStyle = "rgba(0,0,0,0.05)"
+      ctx.fill()
+
       // Draw circle
       ctx.beginPath()
       ctx.arc(node.x, node.y, 25, 0, Math.PI * 2)
-      ctx.fillStyle = node.highlighted ? "#60a5fa" : "#1e293b"
+      ctx.fillStyle = node.highlighted ? "#3b82f6" : "#ffffff"
       ctx.fill()
-      ctx.strokeStyle = "#60a5fa"
+      ctx.strokeStyle = node.highlighted ? "#2563eb" : "#e2e8f0"
       ctx.lineWidth = 2
       ctx.stroke()
 
       // Draw value
-      ctx.fillStyle = "#e2e8f0"
-      ctx.font = "16px Arial"
+      ctx.fillStyle = node.highlighted ? "#ffffff" : "#1e293b"
+      ctx.font = "bold 16px Arial"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillText(node.value.toString(), node.x, node.y)
@@ -342,10 +349,10 @@ export default function TreeTraversalPage() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link href="/" className="flex items-center justify-center">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-border bg-card">
+        <Link href="/" className="flex items-center justify-center group transition-colors hover:text-primary">
+          <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
           <span className="font-bold text-xl">AlgoViz</span>
         </Link>
         <div className="ml-auto"></div>
@@ -353,128 +360,161 @@ export default function TreeTraversalPage() {
 
       <main className="flex-1 p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          >
             <div>
-              <h1 className="text-3xl font-bold">Tree Traversal Visualizer</h1>
-              <p className="text-gray-500">Visualize different tree traversal algorithms on a binary search tree.</p>
+              <h1 className="text-3xl font-bold tracking-tight">Tree Traversal Visualizer</h1>
+              <p className="text-muted-foreground">Visualize different tree traversal algorithms on a binary search tree.</p>
             </div>
-          </div>
+          </motion.div>
 
-          <Separator />
+          <Separator className="bg-border" />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Controls</CardTitle>
-                <CardDescription>Create and traverse a binary search tree</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="tree-input">Enter comma-separated values</Label>
-                  <div className="flex gap-2">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="lg:col-span-1 border-2">
+                <CardHeader>
+                  <CardTitle>Controls</CardTitle>
+                  <CardDescription>Create and traverse a binary search tree</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="tree-input">Enter comma-separated values</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="tree-input"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder="e.g., 50,30,70,20,40,60,80"
+                        className="border-2 focus-visible:ring-primary"
+                      />
+                      <Button onClick={handleCreateTree} className="shadow-md">Create</Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Traversal Type</Label>
+                    <RadioGroup
+                      value={traversalType}
+                      onValueChange={handleTraversalTypeChange}
+                      className="flex flex-col space-y-1"
+                    >
+                      <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent transition-colors">
+                        <RadioGroupItem value="inorder" id="inorder" />
+                        <Label htmlFor="inorder" className="cursor-pointer flex-1">In-order (LNR)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent transition-colors">
+                        <RadioGroupItem value="preorder" id="preorder" />
+                        <Label htmlFor="preorder" className="cursor-pointer flex-1">Pre-order (NLR)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent transition-colors">
+                        <RadioGroupItem value="postorder" id="postorder" />
+                        <Label htmlFor="postorder" className="cursor-pointer flex-1">Post-order (LRN)</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="animation-speed">Animation Speed (ms)</Label>
                     <Input
-                      id="tree-input"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="e.g., 50,30,70,20,40,60,80"
+                      id="animation-speed"
+                      type="number"
+                      min="100"
+                      max="3000"
+                      step="100"
+                      value={animationSpeed}
+                      onChange={(e) => setAnimationSpeed(Number.parseInt(e.target.value))}
+                      className="border-2"
                     />
-                    <Button onClick={handleCreateTree}>Create</Button>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label>Traversal Type</Label>
-                  <RadioGroup
-                    value={traversalType}
-                    onValueChange={handleTraversalTypeChange}
-                    className="flex flex-col space-y-1"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="inorder" id="inorder" />
-                      <Label htmlFor="inorder">In-order (LNR)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="preorder" id="preorder" />
-                      <Label htmlFor="preorder">Pre-order (NLR)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="postorder" id="postorder" />
-                      <Label htmlFor="postorder">Post-order (LRN)</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="animation-speed">Animation Speed (ms)</Label>
-                  <Input
-                    id="animation-speed"
-                    type="number"
-                    min="100"
-                    max="3000"
-                    step="100"
-                    value={animationSpeed}
-                    onChange={(e) => setAnimationSpeed(Number.parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={startAnimation}
-                    disabled={isAnimating || !rootNode || currentStepIndex >= traversalSteps.length - 1}
-                  >
-                    <Play className="h-4 w-4 mr-2" /> Play
-                  </Button>
-                  <Button onClick={pauseAnimation} disabled={!isAnimating}>
-                    <Pause className="h-4 w-4 mr-2" /> Pause
-                  </Button>
-                  <Button onClick={resetAnimation} disabled={currentStepIndex < 0}>
-                    <RotateCcw className="h-4 w-4 mr-2" /> Reset
-                  </Button>
-                  <Button onClick={stepForward} disabled={currentStepIndex >= traversalSteps.length - 1 || !rootNode}>
-                    <StepForward className="h-4 w-4 mr-2" /> Step
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Traversal Progress</Label>
-                  <div className="p-3 bg-muted rounded-md">
-                    <p className="font-mono text-sm">
-                      {traversalSteps.map((step, index) => (
-                        <span key={index} className={index <= currentStepIndex ? "text-primary font-bold" : ""}>
-                          {step}
-                          {index < traversalSteps.length - 1 ? ", " : ""}
-                        </span>
-                      ))}
-                    </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={startAnimation}
+                      disabled={isAnimating || !rootNode || currentStepIndex >= traversalSteps.length - 1}
+                      variant={isAnimating ? "outline" : "default"}
+                      className="shadow-sm"
+                    >
+                      <Play className="h-4 w-4 mr-2" /> Play
+                    </Button>
+                    <Button onClick={pauseAnimation} disabled={!isAnimating} variant="outline" className="shadow-sm">
+                      <Pause className="h-4 w-4 mr-2" /> Pause
+                    </Button>
+                    <Button onClick={resetAnimation} disabled={currentStepIndex < 0} variant="outline" className="shadow-sm">
+                      <RotateCcw className="h-4 w-4 mr-2" /> Reset
+                    </Button>
+                    <Button onClick={stepForward} disabled={currentStepIndex >= traversalSteps.length - 1 || !rootNode} variant="outline" className="shadow-sm">
+                      <StepForward className="h-4 w-4 mr-2" /> Step
+                    </Button>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label>Explanation</Label>
-                  <div className="p-3 bg-muted rounded-md">
-                    <p className="text-sm">{explanation}</p>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-primary">Traversal Progress</Label>
+                    <div className="p-3 bg-accent/50 border-2 border-accent rounded-md min-h-12 flex items-center">
+                      <p className="font-mono text-sm leading-relaxed">
+                        {traversalSteps.map((step, index) => (
+                          <span key={index} className={index <= currentStepIndex ? "text-primary font-bold bg-primary/10 px-1 rounded" : "opacity-50"}>
+                            {step}
+                            {index < traversalSteps.length - 1 ? " → " : ""}
+                          </span>
+                        ))}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Visualization</CardTitle>
-                <CardDescription>Visual representation of the binary search tree</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full overflow-auto border rounded-md bg-background">
-                  <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className="w-full" />
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-primary">Explanation</Label>
+                    <div className="p-3 bg-muted/50 border-2 border-muted rounded-md italic">
+                      <p className="text-sm leading-relaxed">{explanation || "Choose a traversal type to see an explanation."}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-2"
+            >
+              <Card className="border-2 h-full">
+                <CardHeader className="border-b">
+                  <CardTitle>Visualization</CardTitle>
+                  <CardDescription>Visual representation of the binary search tree</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="w-full overflow-auto border-2 border-dashed rounded-xl bg-slate-50 shadow-inner">
+                    <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className="w-full" />
+                  </div>
+                  <div className="mt-4 flex justify-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full border border-slate-300 bg-white"></div>
+                      <span>Unvisited</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      <span>Current Node</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </main>
 
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full border-t items-center px-4 md:px-6">
-        <p className="text-xs text-gray-500">© 2025 AlgoViz. All rights reserved.</p>
+      <footer className="py-6 border-t border-border bg-card">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-xs text-muted-foreground">© 2025 AlgoViz. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   )
