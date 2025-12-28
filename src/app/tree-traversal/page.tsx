@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
 import { ArrowLeft, Play, Pause, RotateCcw, StepForward } from "lucide-react"
 
@@ -64,22 +64,20 @@ export default function TreeTraversalPage() {
   }
 
   // Calculate x and y coordinates for each node
-  const calculateNodePositions = (
-    node: TreeNode | null,
-    depth = 0,
-    horizontalPosition = 0.5,
-    horizontalSpacing = 0.25,
-  ): void => {
-    if (!node) return
+  const calculateNodePositions = useCallback(
+    (node: TreeNode | null, depth = 0, horizontalPosition = 0.5, horizontalSpacing = 0.25): void => {
+      if (!node) return
 
-    node.x = horizontalPosition * canvasWidth
-    node.y = (depth + 1) * 70
+      node.x = horizontalPosition * canvasWidth
+      node.y = (depth + 1) * 70
 
-    const nextSpacing = horizontalSpacing / 2
+      const nextSpacing = horizontalSpacing / 2
 
-    calculateNodePositions(node.left, depth + 1, horizontalPosition - nextSpacing, nextSpacing)
-    calculateNodePositions(node.right, depth + 1, horizontalPosition + nextSpacing, nextSpacing)
-  }
+      calculateNodePositions(node.left, depth + 1, horizontalPosition - nextSpacing, nextSpacing)
+      calculateNodePositions(node.right, depth + 1, horizontalPosition + nextSpacing, nextSpacing)
+    },
+    [canvasWidth],
+  )
 
   // Generate traversal steps
   const generateTraversalSteps = (node: TreeNode | null, type: string): number[] => {
@@ -110,7 +108,7 @@ export default function TreeTraversalPage() {
   }
 
   // Draw the tree on canvas
-  const drawTree = () => {
+  const drawTree = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas || !rootNode) return
 
@@ -178,18 +176,18 @@ export default function TreeTraversalPage() {
     }
 
     drawNodes(rootNode)
-  }
+  }, [rootNode])
 
   // Reset highlighted nodes
-  const resetHighlights = (node: TreeNode | null): void => {
+  const resetHighlights = useCallback((node: TreeNode | null): void => {
     if (!node) return
     node.highlighted = false
     resetHighlights(node.left)
     resetHighlights(node.right)
-  }
+  }, [])
 
   // Highlight a node with a specific value
-  const highlightNode = (node: TreeNode | null, value: number): void => {
+  const highlightNode = useCallback((node: TreeNode | null, value: number): void => {
     if (!node) return
 
     if (node.value === value) {
@@ -198,7 +196,7 @@ export default function TreeTraversalPage() {
       highlightNode(node.left, value)
       highlightNode(node.right, value)
     }
-  }
+  }, [])
 
   // Handle tree creation
   const handleCreateTree = () => {
@@ -324,7 +322,7 @@ export default function TreeTraversalPage() {
       calculateNodePositions(rootNode)
       drawTree()
     }
-  }, [canvasWidth, canvasHeight, rootNode])
+  }, [canvasWidth, canvasHeight, rootNode, calculateNodePositions, drawTree])
 
   // Update highlighted node when step changes
   useEffect(() => {
@@ -337,7 +335,7 @@ export default function TreeTraversalPage() {
     }
 
     drawTree()
-  }, [currentStepIndex, traversalSteps])
+  }, [currentStepIndex, traversalSteps, rootNode, resetHighlights, highlightNode, drawTree])
 
   // Clean up animation on unmount
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { ArrowLeft, Copy, Download, RefreshCw } from "lucide-react"
 
@@ -22,6 +22,135 @@ const precedence: Record<string, number> = {
   "↔": 0,
 }
 
+// Helper function to convert text operators to symbols
+const convertToSymbols = (expr: string): string => {
+  return expr
+    .replace(/\bNOT\b|!/gi, "¬")
+    .replace(/\bAND\b|&&/gi, "∧")
+    .replace(/\bOR\b|\|\|/gi, "∨")
+    .replace(/\bIMPLIES\b|=>/gi, "→")
+    .replace(/\bIFF\b|<=>/gi, "↔")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+// Helper function to convert symbols to text operators
+const convertToText = (expr: string): string => {
+  return expr
+    .replace(/¬/g, "NOT ")
+    .replace(/∧/g, " AND ")
+    .replace(/∨/g, " OR ")
+    .replace(/→/g, " IMPLIES ")
+    .replace(/↔/g, " IFF ")
+}
+
+// Extract variables from expression
+const extractVariables = (expr: string): string[] => {
+  const vars = new Set<string>()
+
+  for (let i = 0; i < expr.length; i++) {
+    const char = expr[i]
+    if (/[a-z]/.test(char)) {
+      vars.add(char)
+    }
+  }
+
+  return Array.from(vars).sort()
+}
+
+// Convert infix expression to postfix (Shunting Yard algorithm)
+const infixToPostfix = (expr: string): string => {
+  const output: string[] = []
+  const operators: string[] = []
+
+  for (let i = 0; i < expr.length; i++) {
+    const token = expr[i]
+
+    if (/[a-z]/.test(token)) {
+      // Variable
+      output.push(token)
+    } else if (token === "¬" || token === "∧" || token === "∨" || token === "→" || token === "↔") {
+      // Operator
+      while (
+        operators.length > 0 &&
+        operators[operators.length - 1] !== "(" &&
+        precedence[operators[operators.length - 1]] >= precedence[token]
+      ) {
+        output.push(operators.pop()!)
+      }
+      operators.push(token)
+    } else if (token === "(") {
+      // Left parenthesis
+      operators.push(token)
+    } else if (token === ")") {
+      // Right parenthesis
+      while (operators.length > 0 && operators[operators.length - 1] !== "(") {
+        output.push(operators.pop()!)
+      }
+      if (operators.length > 0 && operators[operators.length - 1] === "(") {
+        operators.pop() // Discard the left parenthesis
+      }
+    } else if (token !== " ") {
+      throw new Error(`Invalid token: ${token}`)
+    }
+  }
+
+  // Pop remaining operators
+  while (operators.length > 0) {
+    const op = operators.pop()!
+    if (op === "(") {
+      throw new Error("Mismatched parentheses")
+    }
+    output.push(op)
+  }
+
+  return output.join(" ")
+}
+
+// Evaluate postfix expression
+const evaluatePostfix = (postfix: string, values: Record<string, boolean>): boolean => {
+  const stack: boolean[] = []
+  const tokens = postfix.split(" ")
+
+  for (const token of tokens) {
+    if (/[a-z]/.test(token)) {
+      // Variable
+      stack.push(values[token])
+    } else if (token === "¬") {
+      // NOT operator
+      const operand = stack.pop()
+      if (operand === undefined) throw new Error("Invalid expression")
+      stack.push(!operand)
+    } else {
+      // Binary operator
+      const right = stack.pop()
+      const left = stack.pop()
+      if (left === undefined || right === undefined) throw new Error("Invalid expression")
+
+      switch (token) {
+        case "∧": // AND
+          stack.push(left && right)
+          break
+        case "∨": // OR
+          stack.push(left || right)
+          break
+        case "→": // IMPLIES
+          stack.push(!left || right)
+          break
+        case "↔": // IFF
+          stack.push(left === right)
+          break
+      }
+    }
+  }
+
+  if (stack.length !== 1) {
+    throw new Error("Invalid expression")
+  }
+
+  return stack[0]
+}
+
 export default function TruthTablePage() {
   const [expression, setExpression] = useState<string>("p ∧ (q ∨ ¬r)")
   const [variables, setVariables] = useState<string[]>([])
@@ -30,137 +159,8 @@ export default function TruthTablePage() {
   const [error, setError] = useState<string>("")
   const [activeTab, setActiveTab] = useState<string>("standard")
 
-  // Helper function to convert text operators to symbols
-  const convertToSymbols = (expr: string): string => {
-    return expr
-      .replace(/\bNOT\b|!/gi, "¬")
-      .replace(/\bAND\b|&&/gi, "∧")
-      .replace(/\bOR\b|\|\|/gi, "∨")
-      .replace(/\bIMPLIES\b|=>/gi, "→")
-      .replace(/\bIFF\b|<=>/gi, "↔")
-      .replace(/\s+/g, " ")
-      .trim()
-  }
-
-  // Helper function to convert symbols to text operators
-  const convertToText = (expr: string): string => {
-    return expr
-      .replace(/¬/g, "NOT ")
-      .replace(/∧/g, " AND ")
-      .replace(/∨/g, " OR ")
-      .replace(/→/g, " IMPLIES ")
-      .replace(/↔/g, " IFF ")
-  }
-
-  // Extract variables from expression
-  const extractVariables = (expr: string): string[] => {
-    const vars = new Set<string>()
-
-    for (let i = 0; i < expr.length; i++) {
-      const char = expr[i]
-      if (/[a-z]/.test(char)) {
-        vars.add(char)
-      }
-    }
-
-    return Array.from(vars).sort()
-  }
-
-  // Convert infix expression to postfix (Shunting Yard algorithm)
-  const infixToPostfix = (expr: string): string => {
-    const output: string[] = []
-    const operators: string[] = []
-
-    for (let i = 0; i < expr.length; i++) {
-      const token = expr[i]
-
-      if (/[a-z]/.test(token)) {
-        // Variable
-        output.push(token)
-      } else if (token === "¬" || token === "∧" || token === "∨" || token === "→" || token === "↔") {
-        // Operator
-        while (
-          operators.length > 0 &&
-          operators[operators.length - 1] !== "(" &&
-          precedence[operators[operators.length - 1]] >= precedence[token]
-        ) {
-          output.push(operators.pop()!)
-        }
-        operators.push(token)
-      } else if (token === "(") {
-        // Left parenthesis
-        operators.push(token)
-      } else if (token === ")") {
-        // Right parenthesis
-        while (operators.length > 0 && operators[operators.length - 1] !== "(") {
-          output.push(operators.pop()!)
-        }
-        if (operators.length > 0 && operators[operators.length - 1] === "(") {
-          operators.pop() // Discard the left parenthesis
-        }
-      } else if (token !== " ") {
-        throw new Error(`Invalid token: ${token}`)
-      }
-    }
-
-    // Pop remaining operators
-    while (operators.length > 0) {
-      const op = operators.pop()!
-      if (op === "(") {
-        throw new Error("Mismatched parentheses")
-      }
-      output.push(op)
-    }
-
-    return output.join(" ")
-  }
-
-  // Evaluate postfix expression
-  const evaluatePostfix = (postfix: string, values: Record<string, boolean>): boolean => {
-    const stack: boolean[] = []
-    const tokens = postfix.split(" ")
-
-    for (const token of tokens) {
-      if (/[a-z]/.test(token)) {
-        // Variable
-        stack.push(values[token])
-      } else if (token === "¬") {
-        // NOT operator
-        const operand = stack.pop()
-        if (operand === undefined) throw new Error("Invalid expression")
-        stack.push(!operand)
-      } else {
-        // Binary operator
-        const right = stack.pop()
-        const left = stack.pop()
-        if (left === undefined || right === undefined) throw new Error("Invalid expression")
-
-        switch (token) {
-          case "∧": // AND
-            stack.push(left && right)
-            break
-          case "∨": // OR
-            stack.push(left || right)
-            break
-          case "→": // IMPLIES
-            stack.push(!left || right)
-            break
-          case "↔": // IFF
-            stack.push(left === right)
-            break
-        }
-      }
-    }
-
-    if (stack.length !== 1) {
-      throw new Error("Invalid expression")
-    }
-
-    return stack[0]
-  }
-
   // Generate truth table
-  const generateTruthTable = () => {
+  const generateTruthTable = useCallback(() => {
     try {
       setError("")
 
@@ -212,7 +212,7 @@ export default function TruthTablePage() {
     } catch (err) {
       setError(`Error parsing expression: ${err instanceof Error ? err.message : String(err)}`)
     }
-  }
+  }, [expression, activeTab])
 
   // Handle expression change
   const handleExpressionChange = (value: string) => {
@@ -272,7 +272,7 @@ export default function TruthTablePage() {
     if (expression) {
       generateTruthTable()
     }
-  }, [])
+  }, [expression, generateTruthTable])
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
